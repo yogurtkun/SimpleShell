@@ -10,10 +10,16 @@
 
 HListP history_record;
 char split_command[ARGMAX][ARGLEN] = {};
+int in_std,out_std;
+int p[2];
+int previous;
 
 int main(int argc, char const *argv[])
 {
     history_record = create_history();
+    in_std = dup(0);
+    out_std = dup(1);
+    
     while(1){
         char command[COMMAND_BUFFER_LEN] = {};
         char short_command[COMMAND_BUFFER_LEN] = {};
@@ -90,6 +96,8 @@ int conduct_command(char *com,int status){
     char * command_seq[ARGMAX] = {};
     int arg_count = 0;
     
+    pipe(p);
+    
     strcpy(temp_command,com);
     char * pch = strtok((char*)temp_command," ");
     while(pch != NULL){
@@ -115,30 +123,48 @@ int conduct_command(char *com,int status){
         }
     }
     else if (strcmp(command_seq[0],"history") == 0){
-        if (arg_count == 1) {
-            print_history(history_record);
-        }else if(arg_count == 2 && strcmp(command_seq[1], "-c") == 0){
-            clean_history(history_record);
-        }else if(arg_count == 2 ){
-            int offest = -1;
-            if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 || offest>=history_record->size )){
-                fprintf(stderr, "error: %s\n","Invaild offest");
+        pid_t h_pid ;
+        
+        if((h_pid = fork()) < 0){
+            fprintf(stderr, "error: %s\n", strerror(errno));
+            return -1;
+        }
+        if (h_pid == 0) {
+            change_status(status);
+            if (arg_count == 1) {
+                print_history(history_record);
+            }else if(arg_count == 2 && strcmp(command_seq[1], "-c") == 0){
+                clean_history(history_record);
+            }else if(arg_count == 2 ){
+                int offest = -1;
+                if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 || offest>=history_record->size )){
+                    fprintf(stderr, "error: %s\n","Invaild offest");
+                }
+                
+                conduct_command(find_n_th(history_record, offest), status);
             }
-            
-            conduct_command(find_n_th(history_record, offest), status);
+            exit(EXIT_SUCCESS);
+        }else{
+            waitpid(h_pid, NULL, 0);
+            close(p[1]);
         }
     }
     else{
         my_exec(command_seq,arg_count, status);
     }
-    
+
+    if(status != FIRST_COM)
+    	close(previous);
+    previous = p[0];
     return 0;
 }
 
 int my_exec(char * com[], int len,int status){
     pid_t pid;
     int pid_status;
+    //fprintf(stderr, "read:%d write:%d previous_read:%d\n",p[0],p[1],previous );
     if ((pid = fork()) == 0){
+        change_status(status);
         if (len > 1)
             pid_status = execv(com[0],com+1);
         else
@@ -151,6 +177,7 @@ int my_exec(char * com[], int len,int status){
     }
     else{
         waitpid(pid,&pid_status,0);
+        close(p[1]);
     }
     return 0;
 }
@@ -175,4 +202,21 @@ int check_arg_num(char * com,int sh){
     }else{
         return 0;
     }
+}
+
+int change_status(int status){
+    if(status == SINGLE_COM){
+        return 0;
+    }else if (status == FIRST_COM){
+        close(p[0]);
+        dup2(p[1], 1);
+    }else if(status == MID_COM){
+        dup2(previous, 0);
+        close(p[0]);
+        dup2(p[1], 1);
+    }else if(status == LAST_COM){
+        dup2(previous, 0);
+        close(p[0]);
+    }
+    return 0;
 }

@@ -33,4 +33,6 @@ int check_arg_num(char *,int sh);
 
 int my_exec(char *a[],int, int );
 
+int change_file(int status);
+
 #endif
