@@ -4,14 +4,8 @@
 #include "stdlib.h"
 #include "shell.h"
 #include "unistd.h"
-
-int conduct_command(char * com,int flag){
-	printf("%s\n", com);
-	if (strcmp(com,"exit") == 0)
-	{
-		exit(EXIT_SUCCESS);
-	}
-}
+#include "errno.h"
+#include "sys/wait.h"
 
 int main(int argc, char const *argv[])
 {
@@ -20,7 +14,6 @@ int main(int argc, char const *argv[])
 	char split_command[ARGMAX][ARGLEN] = {};
 
 	int arg_count = 0;
-	int current_arg_pos = 0;
 
 	while(1){
 		printf("$");
@@ -30,6 +23,7 @@ int main(int argc, char const *argv[])
 		if (strlen(command) >= MAX_INPUT_LEN)
 		{
 			fprintf(stderr,"error: %s\n","Input exceeds the max length");
+			fflush(stdin);
 			continue;
 		}
 
@@ -40,50 +34,114 @@ int main(int argc, char const *argv[])
 		while(short_command[i] != '\n'){i++;};
 		short_command[i] = 0;
 
-		char * pipe_pos = get_pipe_pos(short_command);
-
 		char * pch = NULL;
-		pch = strtok(short_command," ");
-		
-		while(pch != NULL){
-			if (pch -1 == pipe_pos)
-			{
-				strcpy((char*)split_command+arg_count*ARGLEN,"|");
-				arg_count ++;
-			}
-			strcpy((char *)split_command+arg_count*ARGLEN,pch);
-			arg_count += 1;
-			pch = strtok(NULL," ");
+		pch = strtok(short_command,"|");
+		while(pch!=NULL){
+			strcpy((char *)split_command+ARGLEN*arg_count,pch);
+			arg_count ++;
+			pch = strtok(NULL,"|");
 		}
-		
-		char single_command[40] = {};
-		int p_pipe = 0;
-		pid_t pid;
-		int status;
 
-		for (i = 0; i < arg_count; ++i)
+		for (int i = 0; i < arg_count; ++i)
 		{
-			if(strcmp(split_command[i], "|") != 0){
-				strcat(single_command,split_command[i]);
-				strcat(single_command," ");
-			}else{
-
-				if (!p_pipe)
-					status = conduct_command(single_command,FIRST_COM);
-				else
-					status = conduct_command(single_command,MID_COM);
-				
-				memset(single_command,0,40*sizeof(char));
-				p_pipe = 1;
+			if (arg_count == 1){
+				if (conduct_command(split_command[i],SINGLE_COM) == -1)
+				{
+					break;
+				}
+			}
+			else if (i == 0){
+				if (conduct_command(split_command[i],FIRST_COM) == -1)
+				{
+					break;
+				}
+			}
+			else if (i == arg_count-1){
+				if (conduct_command(split_command[i],LAST_COM) == -1)
+				{
+					break;
+				}
+			}
+			else{
+				if (conduct_command(split_command[i],MID_COM) == -1)
+				{
+					break;
+				}
 			}
 		}
 
-		if (!p_pipe)
-			conduct_command(single_command,SINGLE_COM);
-		else
-			conduct_command(single_command,LAST_COM);
-		memset(single_command,0,40*sizeof(char));
-
+		arg_count = 0;
 	}
 	return 0;
+}
+
+
+int conduct_command(char *com,int status){
+	char temp_command[ARGLEN] = {};
+	char * command_seq[ARGMAX] = {};
+	int arg_count = 0;
+
+	strcpy(temp_command,com);
+	char * pch = strtok((char*)temp_command," ");
+	while(pch != NULL){
+		command_seq[arg_count]=pch;
+		arg_count ++;
+		pch = strtok(NULL," ");
+	}
+
+	if (strcmp(command_seq[0],"exit") == 0)
+		exit(EXIT_SUCCESS);
+
+	else if(strcmp(command_seq[0],"cd") == 0){
+
+	}
+	else if (strcmp(command_seq[0],"history") == 0){
+		
+	}
+	else{
+		int exec_status = my_exec(command_seq,arg_count, status);
+	}
+
+	return 0;
+}
+
+int my_exec(char * com[], int len,int status){
+	pid_t pid;
+	int pid_status;
+	if ((pid = fork()) == 0){
+		if (len > 1)
+			pid_status = execv(com[0],com+1);
+		else
+			pid_status = execl(com[0],com[0],NULL);
+	}
+	else{
+		waitpid(pid,&pid_status,0);
+		printf("%d\n", pid_status);
+		if (pid_status < 0)
+		{
+			fprintf(stderr, "error: %s\n", strerror(errno));
+		}
+	}
+}
+
+int check_arg_num(char * com,int sh){
+	char temp_argument[ARGLEN] = {};
+	strcpy(temp_argument,com);
+
+	int arg_num = 0;
+
+	char * pch = NULL;
+
+	pch = strtok(temp_argument," ");
+	while(pch != NULL){
+		arg_num++;
+		pch = strtok(NULL," ");
+	}
+
+	if (arg_num > sh)
+	{
+		return -1;
+	}else{
+		return 0;
+	}
 }

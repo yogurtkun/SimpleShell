@@ -31,4 +31,10 @@ char * get_pipe_pos(char * s){
 	return NULL;
 }
 
+int conduct_command(char *,int status);
+
+int check_arg_num(char *,int sh);
+
+int my_exec(char *a[],int, int );
+
 #endif
