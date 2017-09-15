@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
         add_history(history_record, short_command);
         
         parse_command(short_command);
-
+        
     }
     return 0;
 }
@@ -130,7 +130,7 @@ int conduct_command(char *com,int status){
             return -1;
         }
         if (h_pid == 0) {
-            change_status(status);
+            change_file(status);
             if (arg_count == 1) {
                 print_history(history_record);
             }else if(arg_count == 2 && strcmp(command_seq[1], "-c") == 0){
@@ -141,7 +141,7 @@ int conduct_command(char *com,int status){
                     fprintf(stderr, "error: %s\n","Invaild offest");
                 }
                 
-                conduct_command(find_n_th(history_record, offest), status);
+                parse_command(find_n_th(history_record, offest));
             }
             exit(EXIT_SUCCESS);
         }else{
@@ -150,11 +150,11 @@ int conduct_command(char *com,int status){
         }
     }
     else{
-        my_exec(command_seq,arg_count, status);
+        if(my_exec(command_seq,arg_count, status) == -1){
+            return -1;
+        }
     }
-
-    if(status != FIRST_COM)
-    	close(previous);
+    
     previous = p[0];
     return 0;
 }
@@ -164,7 +164,7 @@ int my_exec(char * com[], int len,int status){
     int pid_status;
     //fprintf(stderr, "read:%d write:%d previous_read:%d\n",p[0],p[1],previous );
     if ((pid = fork()) == 0){
-        change_status(status);
+        change_file(status);
         if (len > 1)
             pid_status = execv(com[0],com+1);
         else
@@ -204,7 +204,7 @@ int check_arg_num(char * com,int sh){
     }
 }
 
-int change_status(int status){
+int change_file(int status){
     if(status == SINGLE_COM){
         return 0;
     }else if (status == FIRST_COM){
