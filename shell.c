@@ -7,6 +7,7 @@
 #include "errno.h"
 #include "sys/wait.h"
 #include "list.h"
+#include "limits.h"
 
 HListP history_record;
 char split_command[ARGMAX][ARGLEN] = {};
@@ -25,7 +26,7 @@ int main(int argc, char const *argv[])
     while(1){
         char command[COMMAND_BUFFER_LEN] = {};
         char short_command[COMMAND_BUFFER_LEN] = {};
-        history_loop = -1;
+        history_loop = INT_MAX;
         
         printf("$");
         fgets(command,COMMAND_BUFFER_LEN,stdin);
@@ -142,7 +143,7 @@ int conduct_command(char *com,int status){
                 int offest = -1;
                 if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 
                 	|| offest>=history_record->size || offest >= history_loop)){
-                    fprintf(stderr, "error: %s\n","Invaild offest");
+                    fprintf(stderr, "error: %s\n","Invalid offest");
                     exit(EXIT_FAILURE);
                 }
                 
@@ -171,8 +172,9 @@ int my_exec(char * com[], int len,int status){
     //fprintf(stderr, "read:%d write:%d previous_read:%d\n",p[0],p[1],previous );
     if ((pid = fork()) == 0){
         change_file(status);
+
         if (len > 1)
-            pid_status = execv(com[0],com+1);
+            pid_status = execv(com[0],com);
         else
             pid_status = execl(com[0],com[0],NULL);
         if (pid_status < 0)
