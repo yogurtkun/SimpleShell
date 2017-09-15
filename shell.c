@@ -93,7 +93,17 @@ int conduct_command(char *com,int status){
 		exit(EXIT_SUCCESS);
 	}
 	else if(strcmp(command_seq[0],"cd") == 0){
+		if (check_arg_num < 0)
+		{
+			fprintf(stderr,"error: %s\n","Too many arguments.");
+			return -1;
+		}
 
+		int ch_status = chdir(command_seq[1]);
+		if (ch_status < 0)
+		{
+			fprintf(stderr, "error: %s\n", strerror(errno));
+		}
 	}
 	else if (strcmp(command_seq[0],"history") == 0){
 		

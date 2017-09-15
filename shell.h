@@ -15,22 +15,6 @@
 
 #include "string.h"
 
-char * get_pipe_pos(char * s){
-	int len = strlen(s);
-
-	char * res =NULL;
-
-	int i = 0;
-	for(;i<len ; i++){
-		if(s[i] == '|'){
-			s[i] = ' ';
-			return s+i;
-		}
-	}
-
-	return NULL;
-}
-
 int conduct_command(char *,int status);
 
 int check_arg_num(char *,int sh);
