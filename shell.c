@@ -14,6 +14,8 @@ int in_std,out_std;
 int p[2];
 int previous;
 
+int history_loop;
+
 int main(int argc, char const *argv[])
 {
     history_record = create_history();
@@ -23,6 +25,7 @@ int main(int argc, char const *argv[])
     while(1){
         char command[COMMAND_BUFFER_LEN] = {};
         char short_command[COMMAND_BUFFER_LEN] = {};
+        history_loop = -1;
         
         printf("$");
         fgets(command,COMMAND_BUFFER_LEN,stdin);
@@ -137,10 +140,13 @@ int conduct_command(char *com,int status){
                 clean_history(history_record);
             }else if(arg_count == 2 ){
                 int offest = -1;
-                if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 || offest>=history_record->size )){
+                if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 
+                	|| offest>=history_record->size || offest >= history_loop)){
                     fprintf(stderr, "error: %s\n","Invaild offest");
+                    exit(EXIT_FAILURE);
                 }
                 
+                history_loop = offest;
                 parse_command(find_n_th(history_record, offest));
             }
             exit(EXIT_SUCCESS);
