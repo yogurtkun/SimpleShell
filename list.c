@@ -1,6 +1,7 @@
 #include "list.h"
 #include "string.h"
 #include "stdlib.h"
+#include "stdio.h"
 
 HListP create_history(){
     HListP new_list = (HListP)malloc(sizeof(HList));
@@ -55,3 +56,15 @@ char * find_n_th(HListP h, int n){
     }
     return p->command;
 }
+
+int print_history(HListP h){
+    int n = h->size;
+    int i = 0;
+    ListNodeP w_p = h->s->next;
+    for( ; i < n ; i++){
+        fprintf(stdout, "%d %s\n",i,w_p->command);
+        w_p = w_p->next;
+    }
+    return 0;
+}
+

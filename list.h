@@ -8,7 +8,7 @@ typedef struct listnode * ListNodeP;
 
 typedef struct listnode
 {
-    char command[ARGMAX];
+    char command[ARGLEN];
     ListNodeP next;
     
 }ListNode;
@@ -29,5 +29,7 @@ int clean_history(HListP);
 int add_history(HListP, char *);
 
 char * find_n_th(HListP, int);
+
+int print_history(HListP);
 
 #endif
