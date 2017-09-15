@@ -89,9 +89,9 @@ int conduct_command(char *com,int status){
 		pch = strtok(NULL," ");
 	}
 
-	if (strcmp(command_seq[0],"exit") == 0)
+	if (strcmp(command_seq[0],"exit") == 0){
 		exit(EXIT_SUCCESS);
-
+	}
 	else if(strcmp(command_seq[0],"cd") == 0){
 
 	}
@@ -113,14 +113,15 @@ int my_exec(char * com[], int len,int status){
 			pid_status = execv(com[0],com+1);
 		else
 			pid_status = execl(com[0],com[0],NULL);
-	}
-	else{
-		waitpid(pid,&pid_status,0);
-		printf("%d\n", pid_status);
 		if (pid_status < 0)
 		{
 			fprintf(stderr, "error: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
 		}
+	}
+	else{
+		waitpid(pid,&pid_status,0);
+		return 0;
 	}
 }
 
