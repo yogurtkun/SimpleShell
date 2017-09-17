@@ -16,6 +16,9 @@
 
 #define PARSE_SUCCESS 200
 
+#define EXIST_NEXT 0
+#define NOT_EXIST_NEXT 1
+
 #define SINGLE_COM 0
 #define FIRST_COM 1
 #define MID_COM 2
@@ -25,9 +28,9 @@
 
 #include "string.h"
 
-int parse_command(char *);
+int parse_command(char *,int);
 
-int conduct_command(char *,int status);
+int conduct_command(char *,int status,int );
 
 int check_arg_num(char *,int sh);
 

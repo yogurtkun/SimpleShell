@@ -30,6 +30,9 @@ int main(int argc, char const *argv[])
         
         printf("$");
         fgets(command,COMMAND_BUFFER_LEN,stdin);
+        if (command[0] == 0){
+        	exit(EXIT_SUCCESS);
+        }
         
         /*Check the length of input*/
         if (strlen(command) >= MAX_INPUT_LEN)
@@ -48,14 +51,16 @@ int main(int argc, char const *argv[])
         
         add_history(history_record, short_command);
         previous = 0;
-        parse_command(short_command);
+        parse_command(short_command, NOT_EXIST_NEXT);
         
     }
     return 0;
 }
 
-int parse_command(char * short_command){
+int parse_command(char * o_short_command, int next){
     int arg_count = 0;
+    char short_command[ARGLEN];
+    strcpy(short_command,o_short_command);
     char * pch = NULL;
 
     pch = strtok(short_command,"|");
@@ -67,26 +72,26 @@ int parse_command(char * short_command){
     
     for (int i = 0; i < arg_count; ++i)
     {
-        if (arg_count == 1){
-            if (conduct_command(split_command[i],SINGLE_COM) == -1)
+        if (arg_count == 1 && next == NOT_EXIST_NEXT){
+            if (conduct_command(split_command[i],SINGLE_COM, NOT_EXIST_NEXT) == -1)
             {
                 break;
             }
         }
         else if (i == 0){
-            if (conduct_command(split_command[i],FIRST_COM) == -1)
+            if (conduct_command(split_command[i],FIRST_COM, EXIST_NEXT) == -1)
             {
                 break;
             }
         }
-        else if (i == arg_count-1){
-            if (conduct_command(split_command[i],LAST_COM) == -1)
+        else if (i == arg_count-1 && next == NOT_EXIST_NEXT){
+            if (conduct_command(split_command[i],LAST_COM, NOT_EXIST_NEXT) == -1)
             {
                 break;
             }
         }
         else{
-            if (conduct_command(split_command[i],MID_COM) == -1)
+            if (conduct_command(split_command[i],MID_COM,EXIST_NEXT) == -1)
             {
                 break;
             }
@@ -96,7 +101,7 @@ int parse_command(char * short_command){
     return PARSE_SUCCESS;
 }
 
-int conduct_command(char *com,int status){
+int conduct_command(char *com,int status,int next){
     char temp_command[ARGLEN] = {};
     char * command_seq[ARGMAX] = {};
     int arg_count = 0;
@@ -128,35 +133,6 @@ int conduct_command(char *com,int status){
         }
     }
     else if (strcmp(command_seq[0],"history") == 0){
-        // pid_t h_pid ;
-        
-        // if((h_pid = fork()) < 0){
-        //     fprintf(stderr, "error: %s\n", strerror(errno));
-        //     return -1;
-        // }
-        // if (h_pid == 0) {
-        //     change_file(status);
-        //     if (arg_count == 1) {
-        //         print_history(history_record);
-        //     }else if(arg_count == 2 && strcmp(command_seq[1], "-c") == 0){
-        //         clean_history(history_record);
-        //     }else if(arg_count == 2 ){
-        //         int offest = -1;
-        //         if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 
-        //         	|| offest>=history_record->size || offest >= history_loop)){
-        //             fprintf(stderr, "error: %s\n","Invalid offest");
-        //             exit(EXIT_FAILURE);
-        //         }
-                
-        //         history_loop = offest;
-        //         parse_command(find_n_th(history_record, offest));
-        //     }
-        //     exit(EXIT_SUCCESS);
-        // }else{
-        //     waitpid(h_pid, NULL, 0);
-        //     close(p[1]);
-        // }
-
         pid_t h_pid;
         if (arg_count == 1){
         	h_pid = fork();
@@ -195,7 +171,7 @@ int conduct_command(char *com,int status){
 			}
                 
 			history_loop = offest;
-			parse_command(find_n_th(history_record, offest));
+			parse_command(find_n_th(history_record, offest),next);
 
         }else{
         	fprintf(stderr,"error: %s\n","Wrong arguments.");
@@ -232,6 +208,10 @@ int my_exec(char * com[], int len,int status){
     else{
         waitpid(pid,&pid_status,0);
         close(p[1]);
+        if (WEXITSTATUS(pid_status) == 1)
+        {
+        	return -1;
+        }        
     }
     return 0;
 }
