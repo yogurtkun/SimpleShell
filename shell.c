@@ -47,7 +47,7 @@ int main(int argc, char const *argv[])
         short_command[i] = 0;
         
         add_history(history_record, short_command);
-        
+        previous = 0;
         parse_command(short_command);
         
     }
@@ -57,6 +57,7 @@ int main(int argc, char const *argv[])
 int parse_command(char * short_command){
     int arg_count = 0;
     char * pch = NULL;
+
     pch = strtok(short_command,"|");
     while(pch!=NULL){
         strcpy((char *)split_command+ARGLEN*arg_count,pch);
@@ -127,33 +128,78 @@ int conduct_command(char *com,int status){
         }
     }
     else if (strcmp(command_seq[0],"history") == 0){
-        pid_t h_pid ;
+        // pid_t h_pid ;
         
-        if((h_pid = fork()) < 0){
-            fprintf(stderr, "error: %s\n", strerror(errno));
-            return -1;
-        }
-        if (h_pid == 0) {
-            change_file(status);
-            if (arg_count == 1) {
-                print_history(history_record);
-            }else if(arg_count == 2 && strcmp(command_seq[1], "-c") == 0){
-                clean_history(history_record);
-            }else if(arg_count == 2 ){
-                int offest = -1;
-                if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 
-                	|| offest>=history_record->size || offest >= history_loop)){
-                    fprintf(stderr, "error: %s\n","Invalid offest");
-                    exit(EXIT_FAILURE);
-                }
+        // if((h_pid = fork()) < 0){
+        //     fprintf(stderr, "error: %s\n", strerror(errno));
+        //     return -1;
+        // }
+        // if (h_pid == 0) {
+        //     change_file(status);
+        //     if (arg_count == 1) {
+        //         print_history(history_record);
+        //     }else if(arg_count == 2 && strcmp(command_seq[1], "-c") == 0){
+        //         clean_history(history_record);
+        //     }else if(arg_count == 2 ){
+        //         int offest = -1;
+        //         if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 
+        //         	|| offest>=history_record->size || offest >= history_loop)){
+        //             fprintf(stderr, "error: %s\n","Invalid offest");
+        //             exit(EXIT_FAILURE);
+        //         }
                 
-                history_loop = offest;
-                parse_command(find_n_th(history_record, offest));
-            }
-            exit(EXIT_SUCCESS);
+        //         history_loop = offest;
+        //         parse_command(find_n_th(history_record, offest));
+        //     }
+        //     exit(EXIT_SUCCESS);
+        // }else{
+        //     waitpid(h_pid, NULL, 0);
+        //     close(p[1]);
+        // }
+
+        pid_t h_pid;
+        if (arg_count == 1){
+        	h_pid = fork();
+        	if (h_pid < 0){
+        		fprintf(stderr, "error: %s\n", strerror(errno));
+        		return -1;	
+        	}
+        	if(h_pid == 0){
+        		change_file(status);
+        		print_history(history_record);
+        		exit(EXIT_SUCCESS);
+        	}else{
+        		waitpid(h_pid,NULL,0);
+        		close(p[1]);
+        	}
+        }else if(arg_count == 2 && strcmp(command_seq[1], "-c") == 0){
+        	h_pid = fork();
+        	if (h_pid < 0){
+        		fprintf(stderr, "error: %s\n", strerror(errno));
+        		return -1;	
+        	}
+        	if(h_pid == 0){
+        		change_file(status);
+        		clean_history(history_record);
+        		exit(EXIT_SUCCESS);
+        	}else{
+        		waitpid(h_pid,NULL,0);
+        		close(p[1]);
+        	}
+        }else if(arg_count == 2 ){
+			int offest = -1;
+			if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 
+				|| offest>=history_record->size || offest >= history_loop)){
+			fprintf(stderr, "error: %s\n","Invalid offest");
+			exit(EXIT_FAILURE);
+			}
+                
+			history_loop = offest;
+			parse_command(find_n_th(history_record, offest));
+
         }else{
-            waitpid(h_pid, NULL, 0);
-            close(p[1]);
+        	fprintf(stderr,"error: %s\n","Wrong arguments.");
+        	return -1;
         }
     }
     else{
@@ -216,6 +262,7 @@ int change_file(int status){
     if(status == SINGLE_COM){
         return 0;
     }else if (status == FIRST_COM){
+    	dup2(previous,0);
         close(p[0]);
         dup2(p[1], 1);
     }else if(status == MID_COM){
