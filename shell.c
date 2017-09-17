@@ -58,6 +58,12 @@ int main(int argc, char const *argv[])
 }
 
 int parse_command(char * o_short_command, int next){
+	if (check_pipe(o_short_command) == -1)
+    {
+    	fprintf(stderr,"error: %s\n","Wrong pipe.");
+    	return -1;
+    }
+
     int arg_count = 0;
     char short_command[ARGLEN];
     strcpy(short_command,o_short_command);
@@ -110,6 +116,10 @@ int conduct_command(char *com,int status,int next){
     
     strcpy(temp_command,com);
     char * pch = strtok((char*)temp_command," ");
+    if(pch ==NULL){
+    	fprintf(stderr,"error: %s\n","Wrong pipe.");
+    	return -1;
+    }
     while(pch != NULL){
         command_seq[arg_count]=pch;
         arg_count ++;
@@ -254,4 +264,27 @@ int change_file(int status){
         close(p[0]);
     }
     return 0;
+}
+
+int check_pipe(char * command){
+	int start = 0;
+	int last_pipe =0;
+	char last_c = 0;
+	for(int i = 0 ; i < strlen(command) ; i++){
+		if(!start && command[i] == '|')
+			return -1;
+		if(!start && command[i] != '|' && command[i] != ' ')
+			start =1;
+		if(last_pipe && command[i] == '|')
+			return -1;
+		if (command[i] == '|'){
+			last_pipe = 1;
+		}else{
+			last_pipe = 0;
+		}
+		last_c = (command[i] == ' '?last_c:command[i]);
+	}
+	if(last_c=='|')
+		return -1;
+	return 0;
 }

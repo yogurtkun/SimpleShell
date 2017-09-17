@@ -28,6 +28,8 @@
 
 #include "string.h"
 
+int check_pipe(char *);
+
 int parse_command(char *,int);
 
 int conduct_command(char *,int status,int );
