@@ -177,7 +177,7 @@ int conduct_command(char *com,int status,int next){
 			if(sscanf(command_seq[1], "%d",&offest) != 1 || (offest < 0 
 				|| offest>=history_record->size || offest >= history_loop)){
 			fprintf(stderr, "error: %s\n","Invalid offest");
-			exit(EXIT_FAILURE);
+			return(-1);
 			}
                 
 			history_loop = offest;
