@@ -127,6 +127,7 @@ int conduct_command(char *com,int status,int next){
     }
     
     if (strcmp(command_seq[0],"exit") == 0){
+    	free(history_record);
         exit(EXIT_SUCCESS);
     }
     else if(strcmp(command_seq[0],"cd") == 0){
