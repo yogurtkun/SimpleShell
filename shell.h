@@ -30,13 +30,13 @@
 
 int check_pipe(char *);
 
-int parse_command(char *,int);
+int parse_command(char *, int);
 
-int conduct_command(char *,int status,int );
+int conduct_command(char *, int status, int);
 
-int check_arg_num(char *,int sh);
+int check_arg_num(char *, int sh);
 
-int my_exec(char *a[],int, int );
+int my_exec(char *a[], int, int);
 
 int change_file(int status);
 

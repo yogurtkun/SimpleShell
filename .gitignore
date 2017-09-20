@@ -1,3 +1,4 @@
 *.o
 test.c
 *.out
+checkpatch.pl

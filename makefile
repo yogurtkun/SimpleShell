@@ -1,5 +1,5 @@
 w4118_sh : shell.c shell.h list.o
-			cc -o w4118_sh shell.c list.o -std=c11
+			cc -o w4118_sh shell.c list.o -std=c11 -Wall
 
 list.o : list.c list.h shell.h
-			cc -c list.c
+			cc -c list.c -Wall
