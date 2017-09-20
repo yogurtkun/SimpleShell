@@ -1,0 +1,16 @@
+1. The relationship between file description table and the real file
+http://blog.csdn.net/cywosp/article/details/38965239
+2. How to write multiple pipe
+https://stackoverflow.com/questions/17630247/coding-multiple-pipe-in-c
+3. How to use dup2
+https://stackoverflow.com/questions/9084099/re-opening-stdout-and-stdin-file-descriptors-after-closing-them
+4. How to write makefile
+http://www.chinaunix.net/old_jh/23/408225.html
+5. How to use exec family
+http://blog.csdn.net/aile770339804/article/details/7443921
+6. How to use pipe
+http://tldp.org/LDP/lpg/node11.html
+7. How to use strtok
+http://www.cplusplus.com/reference/cstring/strpbrk/
+8. How to capture the children process exit status
+https://stackoverflow.com/questions/27306764/capturing-exit-status-code-of-child-process
