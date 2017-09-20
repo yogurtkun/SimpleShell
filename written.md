@@ -1,7 +1,7 @@
 <p align="center" style="font-family: Times New Roman ;font-size:30px">Jiachen Yang</p>
 <p align="center" style="font-family: Times New Roman">jy2865  M.S. in Computer Science</p>
 <p align="center" style="font-family: Times New Roman">M.S. in Computer Science, freshman</p>
-[TOC]
+
 #1.3
 I believe the web browsers and mail programs are not part of operating systems. As is mentioned in the text book.*"Operating system is the one program running at all times on the computer"*. Web brosers will not run at all times on the computer. From other point of view, operating systems should manage the hardware and provide service for the application, however, web browsers do not manage hardware and they provide service for people.
 #1.6
