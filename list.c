@@ -3,7 +3,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-HListP create_history()
+HListP create_history(void)
 {
 	HListP new_list = (HListP) malloc(sizeof(HList));
 	new_list->size = 0;

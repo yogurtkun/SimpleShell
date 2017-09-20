@@ -9,20 +9,29 @@
 #include "list.h"
 #include "limits.h"
 
+/************************************************
+ * Some global variables to record:
+ * Command history pointer
+ * One line command after splited with |
+ * pipe file descriptor
+ * previous pipe read file descriptor
+ * global variable to detect loop history
+ *************************************************/
 HListP history_record;
 char split_command[ARGMAX][ARGLEN] = { };
 
-int in_std, out_std;
 int p[2];
 int previous;
 
 int history_loop;
 
+/************************************************
+ * Main function which takes command from stdin and check the length of command
+ *if the length is greater than 80, it will be failed.
+ *************************************************/
 int main(int argc, char const *argv[])
 {
 	history_record = create_history();
-	in_std = dup(0);
-	out_std = dup(1);
 
 	while (1) {
 		char command[COMMAND_BUFFER_LEN] = { };
@@ -60,6 +69,7 @@ int main(int argc, char const *argv[])
 	return 0;
 }
 
+/*parse the command spilt with '|'*/
 int parse_command(char *o_short_command, int next)
 {
 	if (check_pipe(o_short_command) == -1) {
@@ -79,6 +89,7 @@ int parse_command(char *o_short_command, int next)
 		pch = strtok(NULL, "|");
 	}
 
+	/*run each command according to their position in the command string*/
 	for (int i = 0; i < arg_count; ++i) {
 		if (arg_count == 1 && next == NOT_EXIST_NEXT) {
 			if (conduct_command
@@ -110,6 +121,12 @@ int parse_command(char *o_short_command, int next)
 	return PARSE_SUCCESS;
 }
 
+/************************************************
+ * run different command based on their type.
+ * cd, exit and history offset will not fork
+ * history offest will read the command from history_record and call parse_command recursively
+ * other command will call next level function
+ *************************************************/
 int conduct_command(char *com, int status, int next)
 {
 	char temp_command[ARGLEN] = { };
@@ -131,6 +148,8 @@ int conduct_command(char *com, int status, int next)
 	}
 
 	if (strcmp(command_seq[0], "exit") == 0) {
+		clean_history(history_record);
+		free(history_record->s);
 		free(history_record);
 		exit(EXIT_SUCCESS);
 	} else if (strcmp(command_seq[0], "cd") == 0) {
@@ -163,20 +182,7 @@ int conduct_command(char *com, int status, int next)
 			}
 		} else if (arg_count == 2
 			   && strcmp(command_seq[1], "-c") == 0) {
-			h_pid = fork();
-			if (h_pid < 0) {
-				fprintf(stderr, "error: %s\n",
-					strerror(errno));
-				return -1;
-			}
-			if (h_pid == 0) {
-				change_file(status);
-				clean_history(history_record);
-				exit(EXIT_SUCCESS);
-			} else {
-				waitpid(h_pid, NULL, 0);
-				close(p[1]);
-			}
+			clean_history(history_record);
 		} else if (arg_count == 2) {
 			int offest = -1;
 			if (sscanf(command_seq[1], "%d", &offest) != 1
@@ -206,12 +212,16 @@ int conduct_command(char *com, int status, int next)
 	return 0;
 }
 
+/*
+exec some non-built-in function change their pipe according to their status
+*/
 int my_exec(char *com[], int len, int status)
 {
 	pid_t pid;
 	int pid_status;
-	//fprintf(stderr, "read:%d write:%d previous_read:%d\n",p[0],p[1],previous );
-	if ((pid = fork()) == 0) {
+
+	pid = fork();
+	if (pid == 0) {
 		change_file(status);
 
 		if (len > 1)
@@ -232,6 +242,7 @@ int my_exec(char *com[], int len, int status)
 	return 0;
 }
 
+/*check if is the number of argument correct*/
 int check_arg_num(char *com, int sh)
 {
 	char temp_argument[ARGLEN] = { };
@@ -254,6 +265,7 @@ int check_arg_num(char *com, int sh)
 	}
 }
 
+/*change the pipe according to the status*/
 int change_file(int status)
 {
 	if (status == SINGLE_COM) {
@@ -273,6 +285,7 @@ int change_file(int status)
 	return 0;
 }
 
+/*Check if it uses pipe correctly*/
 int check_pipe(char *command)
 {
 	int start = 0;
