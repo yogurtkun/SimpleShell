@@ -36,13 +36,13 @@ int main(int argc, char const *argv[])
 	while (1) {
 		char command[COMMAND_BUFFER_LEN] = { };
 		char short_command[COMMAND_BUFFER_LEN] = { };
+
 		history_loop = INT_MAX;
 
 		printf("$");
 		fgets(command, COMMAND_BUFFER_LEN, stdin);
-		if (command[0] == 0) {
+		if (command[0] == 0)
 			exit(EXIT_SUCCESS);
-		}
 
 		/*Check the length of input */
 		if (strlen(command) >= MAX_INPUT_LEN) {
@@ -56,6 +56,7 @@ int main(int argc, char const *argv[])
 		short_command[MAX_INPUT_LEN] = 0;
 
 		int i = 0;
+
 		while (short_command[i] != '\n') {
 			i++;
 		};
@@ -79,6 +80,7 @@ int parse_command(char *o_short_command, int next)
 
 	int arg_count = 0;
 	char short_command[ARGLEN];
+
 	strcpy(short_command, o_short_command);
 	char *pch = NULL;
 
@@ -89,7 +91,7 @@ int parse_command(char *o_short_command, int next)
 		pch = strtok(NULL, "|");
 	}
 
-	/*run each command according to their position in the command string*/
+	/*run each command according to their position in the command string */
 	for (int i = 0; i < arg_count; ++i) {
 		if (arg_count == 1 && next == NOT_EXIST_NEXT) {
 			if (conduct_command
@@ -124,7 +126,8 @@ int parse_command(char *o_short_command, int next)
 /************************************************
  * run different command based on their type.
  * cd, exit and history offset will not fork
- * history offest will read the command from history_record and call parse_command recursively
+ * history offest will read the command from history_record and
+ * call parse_command recursively
  * other command will call next level function
  *************************************************/
 int conduct_command(char *com, int status, int next)
@@ -137,6 +140,7 @@ int conduct_command(char *com, int status, int next)
 
 	strcpy(temp_command, com);
 	char *pch = strtok((char *) temp_command, " ");
+
 	if (pch == NULL) {
 		fprintf(stderr, "error: %s\n", "Wrong pipe.");
 		return -1;
@@ -160,11 +164,12 @@ int conduct_command(char *com, int status, int next)
 		}
 
 		int ch_status = chdir(command_seq[1]);
-		if (ch_status < 0) {
+
+		if (ch_status < 0)
 			fprintf(stderr, "error: %s\n", strerror(errno));
-		}
 	} else if (strcmp(command_seq[0], "history") == 0) {
 		pid_t h_pid;
+
 		if (arg_count == 1) {
 			h_pid = fork();
 			if (h_pid < 0) {
@@ -185,6 +190,7 @@ int conduct_command(char *com, int status, int next)
 			clean_history(history_record);
 		} else if (arg_count == 2) {
 			int offest = -1;
+
 			if (sscanf(command_seq[1], "%d", &offest) != 1
 			    || (offest < 0
 				|| offest >= history_record->size
@@ -203,9 +209,8 @@ int conduct_command(char *com, int status, int next)
 			return -1;
 		}
 	} else {
-		if (my_exec(command_seq, arg_count, status) == -1) {
+		if (my_exec(command_seq, arg_count, status) == -1)
 			return -1;
-		}
 	}
 
 	previous = p[0];
@@ -213,8 +218,8 @@ int conduct_command(char *com, int status, int next)
 }
 
 /*
-exec some non-built-in function change their pipe according to their status
-*/
+ *exec some non-built-in function change their pipe according to their status
+ */
 int my_exec(char *com[], int len, int status)
 {
 	pid_t pid;
@@ -235,9 +240,8 @@ int my_exec(char *com[], int len, int status)
 	} else {
 		waitpid(pid, &pid_status, 0);
 		close(p[1]);
-		if (WEXITSTATUS(pid_status) == 1) {
+		if (WEXITSTATUS(pid_status) == 1)
 			return -1;
-		}
 	}
 	return 0;
 }
@@ -246,10 +250,10 @@ int my_exec(char *com[], int len, int status)
 int check_arg_num(char *com, int sh)
 {
 	char temp_argument[ARGLEN] = { };
+
 	strcpy(temp_argument, com);
 
 	int arg_num = 0;
-
 	char *pch = NULL;
 
 	pch = strtok(temp_argument, " ");
@@ -258,11 +262,10 @@ int check_arg_num(char *com, int sh)
 		pch = strtok(NULL, " ");
 	}
 
-	if (arg_num > sh) {
+	if (arg_num > sh)
 		return -1;
-	} else {
+	else
 		return 0;
-	}
 }
 
 /*change the pipe according to the status*/
@@ -291,6 +294,7 @@ int check_pipe(char *command)
 	int start = 0;
 	int last_pipe = 0;
 	char last_c = 0;
+
 	for (int i = 0; i < strlen(command); i++) {
 		if (!start && command[i] == '|')
 			return -1;
@@ -298,11 +302,11 @@ int check_pipe(char *command)
 			start = 1;
 		if (last_pipe && command[i] == '|')
 			return -1;
-		if (command[i] == '|') {
+		if (command[i] == '|')
 			last_pipe = 1;
-		} else {
+		else
 			last_pipe = 0;
-		}
+
 		last_c = (command[i] == ' ' ? last_c : command[i]);
 	}
 	if (last_c == '|')

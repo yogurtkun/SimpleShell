@@ -2,4 +2,20 @@ Jiachen Yang
 UNI:jy2865
 HW 1 W4118
 
+My code files includes:
+	shell.c: the main function
+	shell.h: the header file of shell.c 
+	list.c: the implementation of a list which records history commands
+	list.h: the header file of list.c
+	makefile: makefile used for this project
+Other files includes:
+	a.txt: file used in the test
+	README: description file of this project
+	written.md: written homework
+	checkpatch.pl: check the style of the code
+	w4118_sh: the executable file of this project
+	homework_test.py: test file
 
+Assumption:
+1. The max length of the command is 80 char
+2. In pipe, if one command fails, the rest command will not be executed 

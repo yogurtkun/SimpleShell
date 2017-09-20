@@ -21,12 +21,12 @@ typedef struct history_list {
 
 HListP create_history(void);
 
-int clean_history(HListP);
+int clean_history(HListP h);
 
-int add_history(HListP, char *);
+int add_history(HListP h, char *str);
 
-char *find_n_th(HListP, int);
+char *find_n_th(HListP h, int offest);
 
-int print_history(HListP);
+int print_history(HListP h);
 
 #endif

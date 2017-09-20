@@ -28,15 +28,15 @@
 
 #include "string.h"
 
-int check_pipe(char *);
+int check_pipe(char *str);
 
-int parse_command(char *, int);
+int parse_command(char *str, int status);
 
-int conduct_command(char *, int status, int);
+int conduct_command(char *str, int status, int next);
 
-int check_arg_num(char *, int sh);
+int check_arg_num(char *str, int sh);
 
-int my_exec(char *a[], int, int);
+int my_exec(char *a[], int len, int status);
 
 int change_file(int status);
 

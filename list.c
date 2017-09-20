@@ -6,6 +6,7 @@
 HListP create_history(void)
 {
 	HListP new_list = (HListP) malloc(sizeof(HList));
+
 	new_list->size = 0;
 	new_list->s = (ListNodeP) malloc(sizeof(ListNode));
 	new_list->s->next = NULL;
@@ -16,6 +17,7 @@ HListP create_history(void)
 int clean_history(HListP h)
 {
 	ListNodeP p, n;
+
 	h->e = h->s;
 	p = h->s->next;
 	h->s->next = NULL;
@@ -38,6 +40,7 @@ int add_history(HListP h, char *c)
 
 	if (h->size == 100) {
 		ListNodeP temp = h->s->next;
+
 		h->s->next = temp->next;
 		free(temp);
 	} else {
@@ -50,14 +53,15 @@ int add_history(HListP h, char *c)
 char *find_n_th(HListP h, int n)
 {
 	ListNodeP p = h->s->next;
-	if (n + 1 > h->size) {
+
+	if (n + 1 > h->size)
 		return NULL;
-	}
 
 	int i = 0;
-	for (; i < n; i++) {
+
+	for (; i < n; i++)
 		p = p->next;
-	}
+
 	return p->command;
 }
 
@@ -66,6 +70,7 @@ int print_history(HListP h)
 	int n = h->size;
 	int i = 0;
 	ListNodeP w_p = h->s->next;
+
 	for (; i < n; i++) {
 		fprintf(stdout, "%d %s\n", i, w_p->command);
 		w_p = w_p->next;
